@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+backend/.env
+backend/impacttrace.db*
+backend/storage/
+node_modules/
+frontend/dist/
+hf_space/
+frontend/.env.local
