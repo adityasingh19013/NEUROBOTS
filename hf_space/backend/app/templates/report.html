@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{ r.project.name }} – Impact report</title>
+<style>
+  @page { size: A4; margin: 1.6cm 1.5cm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #1f2933; }
+  h1 { font-size: 18pt; margin: 0 0 2pt 0; color: #0f3d3e; }
+  h2 { font-size: 12pt; margin: 14pt 0 5pt 0; color: #0f3d3e; border-bottom: 1px solid #cbd5d1; padding-bottom: 2pt; }
+  .muted { color: #6b7280; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4pt; }
+  th, td { text-align: left; padding: 4pt 5pt; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  th { background: #f1f5f4; font-size: 8.5pt; text-transform: uppercase; color: #475569; }
+  .value { font-size: 15pt; font-weight: bold; color: #0f3d3e; }
+  .small { font-size: 8pt; }
+  .pill { font-size: 7.5pt; padding: 1pt 4pt; border: 1px solid #cbd5d1; }
+  .high { color: #b42318; } .medium { color: #b54708; } .low { color: #475569; }
+  ul { margin: 2pt 0 0 12pt; padding: 0; }
+  li { margin-bottom: 2pt; }
+</style>
+</head>
+<body>
+  <h1>{{ r.project.name }}</h1>
+  <div class="muted">
+    {% if r.project.program %}{{ r.project.program }} · {% endif %}Reporting period {{ r.project.period_start }} to {{ r.project.period_end }}
+    · Generated {{ r.generated_at[:16].replace('T', ' ') }} UTC
+    · Personal data {{ 'masked' if masked else 'NOT masked' }}
+  </div>
+
+  <h2>Headline metrics</h2>
+  <table>
+    <tr><th>Metric</th><th>Value</th><th>Definition</th><th>Records</th></tr>
+    {% for m in r.metrics %}
+    <tr>
+      <td><b>{{ m.code }}</b> {{ m.name }}</td>
+      <td class="value">{{ m.display_value }}</td>
+      <td>{{ m.definition }}</td>
+      <td class="small">Included: {{ m.included }}<br>Excluded: {{ m.excluded }}
+        {% for reason, n in m.excluded_reasons.items() %}<br>· {{ reason }} ({{ n }}){% endfor %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Data quality summary</h2>
+  <table>
+    <tr><th>File</th><th>Role</th><th>Rows</th><th>Issues</th><th>Open</th><th>Quality score</th></tr>
+    {% for f in r.data_quality.files %}
+    <tr><td>{{ f.file }}{% if f.sheet %} ({{ f.sheet }}){% endif %}</td><td>{{ f.role }}</td><td>{{ f.rows }}</td>
+        <td>{{ f.issues }}</td><td>{{ f.open_issues }}</td><td>{{ f.quality_score }}/100</td></tr>
+    {% endfor %}
+  </table>
+  <p class="small">
+    Rows in: {{ r.data_quality.rows_in }} · Duplicate people merged: {{ r.data_quality.duplicates_merged }}
+    · Exact duplicate rows: {{ r.data_quality.exact_duplicates }} · Missing values: {{ r.data_quality.missing_values }}
+    · Invalid values: {{ r.data_quality.invalid_values }} · Unmatched: {{ r.data_quality.unmatched }}
+    · Awaiting review: {{ r.data_quality.needs_review }}
+  </p>
+
+  <h2>Assumptions</h2>
+  <ul>{% for a in r.assumptions %}<li>{{ a }}</li>{% endfor %}</ul>
+
+  <h2>Unresolved issues ({{ r.unresolved_issues|length }})</h2>
+  {% if r.unresolved_issues %}
+  <table>
+    <tr><th>Severity</th><th>File / row</th><th>Issue</th></tr>
+    {% for i in r.unresolved_issues %}
+    <tr><td class="{{ i.severity|lower }}">{{ i.severity }}</td><td class="small">{{ i.file }} · row {{ i.row_number }}</td>
+        <td><b>{{ i.type_label }}</b> – {{ i.message }}</td></tr>
+    {% endfor %}
+  </table>
+  {% else %}<p>None.</p>{% endif %}
+
+  <h2>Caveats</h2>
+  <ul>{% for c in r.caveats %}<li>{{ c }}</li>{% endfor %}</ul>
+
+  <h2>Source file integrity</h2>
+  <table>
+    <tr><th>File</th><th>SHA-256</th><th>Unchanged</th></tr>
+    {% for f in r.integrity %}
+    <tr><td>{{ f.file }}</td><td class="small">{{ f.sha256 }}</td><td>{{ 'Yes' if f.verified else 'NO' }}</td></tr>
+    {% endfor %}
+  </table>
+  <p class="small muted">Every figure in this report can be traced to its source rows in ImpactTrace.
+    Beneficiaries are identified by pseudonymous keys; original files were not modified.</p>
+</body>
+</html>

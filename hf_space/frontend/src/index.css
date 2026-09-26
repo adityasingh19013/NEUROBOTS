@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-page text-ink font-sans antialiased;
+    font-size: 14px;
+  }
+  :focus-visible { @apply outline-none ring-2 ring-primary/40 ring-offset-1; }
+}
+
+@layer components {
+  .card { @apply bg-white border border-line rounded-card shadow-card; }
+  .label { @apply text-[12px] font-medium uppercase tracking-wider text-muted; }
+  .page-title { @apply text-[28px] font-semibold leading-tight text-ink; }
+  .section-title { @apply text-[18px] font-semibold text-ink; }
+  .input {
+    @apply h-10 w-full rounded-ctl border border-line bg-white px-3 text-[14px] text-ink placeholder:text-muted/70
+           focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition;
+  }
+  .select { @apply input pr-8 cursor-pointer; }
+  .table-base { @apply w-full text-left border-collapse; }
+  .table-base th {
+    @apply sticky top-0 z-[1] bg-white h-11 px-4 text-[12px] font-medium uppercase tracking-wider text-muted border-b border-line;
+  }
+  .table-base td { @apply h-11 px-4 border-b border-line align-middle; }
+  .table-base tbody tr { @apply hover:bg-hover transition-colors; }
+  .trace-num {
+    @apply text-trace underline decoration-dotted decoration-2 underline-offset-[6px] cursor-pointer hover:decoration-solid;
+  }
+}
+
+.drawer-enter { animation: drawer-in 180ms ease-out; }
+@keyframes drawer-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.fade-in { animation: fade-in 150ms ease-out; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media print {
+  aside, .no-print { display: none !important; }
+  main { padding: 0 !important; }
+}

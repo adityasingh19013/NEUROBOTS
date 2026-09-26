@@ -1,0 +1,69 @@
+{
+  "organization": "Sahay Community Foundation (synthetic)",
+  "program": "Digital Literacy 2026",
+  "reporting_period": {
+    "start": "2026-01-01",
+    "end": "2026-03-31"
+  },
+  "metrics": [
+    {
+      "id": "M1",
+      "name": "Unique beneficiaries enrolled",
+      "definition": "Count of distinct people in the intake file after duplicate merging, with an enrollment date inside the reporting period.",
+      "source": ["1_beneficiaries_intake.xlsx"],
+      "unit": "people",
+      "exclusions": [
+        "rows flagged as duplicates are merged, not counted twice",
+        "rows with missing enrollment date are counted separately as 'date unknown' and not silently included"
+      ],
+      "calc": {"type": "count_distinct_people", "role": "beneficiary registry", "filters": {"period": true}},
+      "caveat": "People with a missing or out-of-period enrollment date are listed as excluded, not guessed."
+    },
+    {
+      "id": "M2",
+      "name": "Active participants",
+      "definition": "Unique enrolled beneficiaries with at least 2 sessions marked present.",
+      "source": ["1_beneficiaries_intake.xlsx", "2_attendance_records.csv"],
+      "unit": "people",
+      "exclusions": [
+        "attendance rows that cannot be matched to an enrolled beneficiary",
+        "exact duplicate attendance rows",
+        "'present' values that are not a recognised yes/no"
+      ],
+      "calc": {"type": "people_with_min_events", "base": "M3", "min_events": 2}
+    },
+    {
+      "id": "M3",
+      "name": "Total session attendances",
+      "definition": "Count of attendance rows marked present, matched to an enrolled beneficiary, after removing exact duplicate rows.",
+      "source": ["2_attendance_records.csv"],
+      "unit": "attendances",
+      "exclusions": [
+        "exact duplicate rows",
+        "rows that cannot be matched to an enrolled beneficiary (reported separately)",
+        "'present' values that are not a recognised yes/no"
+      ],
+      "calc": {"type": "count_rows", "role": "attendance", "filters": {"attended": true, "linked": true}}
+    },
+    {
+      "id": "M4",
+      "name": "Average confidence gain",
+      "definition": "Mean of (Confidence After - Confidence Before) across matched survey respondents with both scores valid (1-5). If a person has several surveys, use the latest one.",
+      "source": ["3_survey_responses.csv"],
+      "unit": "points on 1-5 scale",
+      "calc": {"type": "mean_difference", "role": "survey", "field_a": "score_after", "field_b": "score_before",
+               "valid_range": [1, 5], "latest_per_person": true, "filters": {"linked": true}},
+      "caveat": "Self-reported and not a control-group comparison; shows reported change, not proven program impact."
+    },
+    {
+      "id": "M5",
+      "name": "Survey response rate",
+      "definition": "Number of M1 beneficiaries with at least one valid survey response, divided by M1.",
+      "source": ["1_beneficiaries_intake.xlsx", "3_survey_responses.csv"],
+      "unit": "percent",
+      "calc": {"type": "ratio", "denominator": "M1",
+               "numerator": {"type": "count_distinct_people", "role": "survey", "filters": {"linked": true, "people_in": "M1"}}},
+      "caveat": "Survey-based figures such as M4 only describe the people who responded."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# API calls go to the backend on Render. If Render gives your service a different URL, change it here.
+/api/*  https://impacttrace-api.onrender.com/api/:splat  200!
+
+# Single-page app: let React Router handle every other path.
+/*  /index.html  200
